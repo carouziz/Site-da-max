@@ -1,0 +1,20 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "imagens"
+public_folder: "imagens"
+
+collections:
+  - name: "produtos"
+    label: "Produtos"
+    folder: "conteudo/produtos"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "Nome do Produto", name: "title", widget: "string"}
+      - {label: "Categoria", name: "cat", widget: "select", options: ["Decoração", "Organização", "Festas", "Casa", "Personalizados", "Pet", "Escritório"]}
+      - {label: "Selo/Tag (Opcional)", name: "tag", widget: "string", required: false}
+      - {label: "Preço (ex: 129.90)", name: "price", widget: "number", value_type: "float"}
+      - {label: "Descrição", name: "desc", widget: "text"}
+      - {label: "Foto do Produto", name: "image", widget: "image"}
