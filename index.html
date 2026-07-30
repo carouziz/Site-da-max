@@ -586,7 +586,25 @@
 </div>
 
 <script>
-<script>
+  // 1. COLE A FUNÇÃO PARSEYAML AQUI NO INÍCIO:
+function parseYAML(text) {
+  const result = {};
+  const lines = text.split(/\r?\n/);
+  
+  for (let line of lines) {
+    line = line.trim();
+    if (line === '---' || !line) continue;
+    
+    const colonIndex = line.indexOf(':');
+    if (colonIndex !== -1) {
+      const key = line.slice(0, colonIndex).trim().toLowerCase();
+      let val = line.slice(colonIndex + 1).trim();
+      val = val.replace(/^["']|["']$/g, '');
+      result[key] = val;
+    }
+  }
+  return result;
+}
 // Produtos de demonstração (fallback)
 let PRODUCTS = [
   {id:1, cat:"Decoração", icon:"🖼️", tag:"Mais vendido", name:"Quadro Decorativo em Acrílico UV", desc:"Impressão UV de alta definição em acrílico 3mm, com frase, foto ou arte à sua escolha. Tamanhos 20x30 a 40x60cm.", price:129.90},
@@ -659,8 +677,52 @@ function parseYAML(text) {
 }
 
 // BUSCAR PRODUTOS CADASTRADOS NO GITHUB
-// BUSCAR PRODUTOS CADASTRADOS NO GITHUB
 async function fetchCMSProducts() {
+  try {
+    const response = await fetch('https://api.github.com/repos/carouziz/Site-da-max/contents/conteudo/produtos');
+    if (!response.ok) return;
+
+    const files = await response.json();
+    if (!Array.isArray(files)) return;
+
+    const cmsProducts = [];
+
+    for (let file of files) {
+      if (file.name.startsWith('.') || file.type !== 'file') continue;
+
+      try {
+        const res = await fetch(file.download_url);
+        const rawText = await res.text();
+        
+        // Aqui ela é chamada para ler o arquivo do produto!
+        const data = parseYAML(rawText);
+
+        const name = data.title || data.name || data.titulo;
+        if (name) {
+          cmsProducts.push({
+            id: file.sha,
+            cat: data.cat || data.categoria || "Geral",
+            name: name,
+            desc: data.desc || data.description || data.descricao || "",
+            price: parseFloat((data.price || data.preco || 0).toString().replace(',', '.')),
+            tag: data.tag || "",
+            image: data.image || data.imagem || null
+          });
+        }
+      } catch (fErr) {
+        console.error("Erro ao ler o arquivo:", file.name, fErr);
+      }
+    }
+
+    if (cmsProducts.length > 0) {
+      PRODUCTS = cmsProducts;
+      renderFilters();
+      renderGrid();
+    }
+  } catch (err) {
+    console.error("Erro no CMS:", err);
+  }
+}
   try {
     // Caminho correto confirmado no seu repositório: conteudo/produtos
     const response = await fetch('https://api.github.com/repos/carouziz/Site-da-max/contents/conteudo/produtos');
