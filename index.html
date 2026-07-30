@@ -604,7 +604,7 @@
   }
   return result;
 }
-odutos de demonstração (fallback)
+//produtos de demonstração (fallback)
 let PRODUCTS = [
   {id:1, cat:"Decoração", icon:"🖼️", tag:"Mais vendido", name:"Quadro Decorativo em Acrílico UV", desc:"Impressão UV de alta definição em acrílico 3mm, com frase, foto ou arte à sua escolha. Tamanhos 20x30 a 40x60cm.", price:129.90},
   {id:2, cat:"Organização", icon:"💄", tag:"Tendência", name:"Organizador de Acrílico para Cosméticos", desc:"Organizador multiuso em acrílico transparente 3mm, gavetas e divisórias sob medida.", price:89.90},
@@ -690,8 +690,7 @@ async function fetchCMSProducts() {
       } catch (fErr) {
         console.error("Erro ao ler o arquivo:", file.name, fErr);
       }
-    }
-
+      }
     if (cmsProducts.length > 0) {
       PRODUCTS = cmsProducts;
       renderFilters();
@@ -755,8 +754,7 @@ async function fetchCMSProducts() {
     console.error("Erro na busca de produtos:", err);
   }
 }
-      }
-    }
+    
 
     if (cmsProducts.length > 0) {
       PRODUCTS = cmsProducts; // Substitui os produtos estáticos pelos reais
@@ -971,8 +969,8 @@ updateCartUI();
 renderProcessTabs();
 
 // Executa a busca no GitHub
-fetchCMSProductss();
-</script>
+fetchCMSProducts();
+
 </script>
 
 </body>
