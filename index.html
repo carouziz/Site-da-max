@@ -587,14 +587,13 @@
 
 
 <script>
+// 1. CONVERTER YAML DO CMS
 function parseYAML(text) {
   const result = {};
   const lines = text.split(/\r?\n/);
-  
   for (let line of lines) {
     line = line.trim();
     if (line === '---' || !line) continue;
-    
     const colonIndex = line.indexOf(':');
     if (colonIndex !== -1) {
       const key = line.slice(0, colonIndex).trim().toLowerCase();
@@ -606,7 +605,7 @@ function parseYAML(text) {
   return result;
 }
 
-// PRODUTOS
+// 2. SEUS PRODUTOS E CATEGORIAS COMPLETOS
 let PRODUCTS = [
   {id:1, cat:"Decoração", icon:"🖼️", tag:"Mais vendido", name:"Quadro Decorativo em Acrílico UV", desc:"Impressão UV de alta definição em acrílico 3mm, com frase, foto ou arte à sua escolha. Tamanhos 20x30 a 40x60cm.", price:129.90},
   {id:2, cat:"Organização", icon:"💄", tag:"Tendência", name:"Organizador de Acrílico para Cosméticos", desc:"Organizador multiuso em acrílico transparente 3mm, gavetas e divisórias sob medida.", price:89.90},
@@ -622,7 +621,7 @@ let PRODUCTS = [
   {id:12, cat:"Organização", icon:"🗂️", tag:"", name:"Display de Balcão para Pequenos Comércios", desc:"Expositor em acrílico para produtos, cardápios ou folhetos — sob medida.", price:119.90}
 ];
 
-// PROCESSOS
+// 3. ANIMAÇÃO DE PROCESSOS DE PRODUÇÃO
 const PROCESS_STEPS = [
   {icon:"🖨️", label:"Impressão UV", text:"Impressão direta em alta definição, com cores vivas e resistência a UV, sobre acrílico, MDF ou ACM."},
   {icon:"✂️", label:"Corte a laser", text:"Precisão milimétrica em cada contorno, garantindo acabamento limpo e sem rebarbas."},
@@ -653,10 +652,10 @@ function iconFor(p) {
     return `<img src="${imgUrl}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:4px;" onerror="this.outerHTML='<span class=\\'pic\\'>🛍️</span>'">`;
   }
   const color = ICON_ACCENTS[(typeof p.id === 'number' ? p.id : 1) % ICON_ACCENTS.length];
-  return `<span class="pic" style="color:${color};">${ICONS[p.id] || '🛍️'}</span>`;
+  return `<span class="pic" style="color:${color};">${ICONS[p.id] || p.icon || '🛍️'}</span>`;
 }
 
-// BUSCA NO GITHUB (COM ASYNC CORRETO)
+// 4. BUSCA DINÂMICA DO GITHUB CMS (ASYNC CONTROLADO)
 async function fetchCMSProducts() {
   try {
     const response = await fetch('https://api.github.com/repos/carouziz/Site-da-max/contents/conteudo/produtos');
@@ -710,6 +709,7 @@ async function fetchCMSProducts() {
 
 let cart = {};
 
+// 5. RENDERIZAÇÃO DE BOTÕES DE CATEGORIAS
 function renderFilters(){
   const cats = ["Todos", ...new Set(PRODUCTS.map(p=>p.cat))];
   const el = document.getElementById('filters');
@@ -723,6 +723,7 @@ function filterCat(cat, btn){
   renderGrid(cat);
 }
 
+// 6. RENDERIZAÇÃO DA GRADE DE PRODUTOS
 function renderGrid(filter="Todos"){
   const grid = document.getElementById('grid');
   if(!grid) return;
@@ -746,6 +747,7 @@ function renderGrid(filter="Todos"){
   `).join('');
 }
 
+// 7. CARRINHO DE COMPRAS
 function addToCart(id, btn){
   cart[id] = (cart[id]||0) + 1;
   updateCartUI();
@@ -830,6 +832,7 @@ function closeCart(){
   if(overlay) overlay.classList.remove('open');
 }
 
+// 8. ABA E TEMPORIZADOR DE PROCESSOS
 let stageIndex = 0;
 function renderProcessTabs(){
   const el = document.getElementById('processTabs');
@@ -851,7 +854,7 @@ function setStage(i){
   if(labelEl) labelEl.innerText = s.label;
 }
 
-// INICIALIZAÇÃO SEGURA
+// 9. INICIALIZAÇÃO AUTOMÁTICA SEGURA
 document.addEventListener("DOMContentLoaded", function() {
   renderFilters();
   renderGrid();
@@ -860,7 +863,6 @@ document.addEventListener("DOMContentLoaded", function() {
   fetchCMSProducts();
   setInterval(()=> setStage((stageIndex+1) % PROCESS_STEPS.length), 4200);
 });
-
 
 </script>
 
