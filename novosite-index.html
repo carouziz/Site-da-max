@@ -586,7 +586,8 @@
 </div>
 
 <script>
-// Produtos padrão (fallback)
+<script>
+// Produtos de demonstração (fallback)
 let PRODUCTS = [
   {id:1, cat:"Decoração", icon:"🖼️", tag:"Mais vendido", name:"Quadro Decorativo em Acrílico UV", desc:"Impressão UV de alta definição em acrílico 3mm, com frase, foto ou arte à sua escolha. Tamanhos 20x30 a 40x60cm.", price:129.90},
   {id:2, cat:"Organização", icon:"💄", tag:"Tendência", name:"Organizador de Acrílico para Cosméticos", desc:"Organizador multiuso em acrílico transparente 3mm, gavetas e divisórias sob medida.", price:89.90},
@@ -599,14 +600,14 @@ let PRODUCTS = [
   {id:9, cat:"Decoração", icon:"🎯", tag:"", name:"Placa Motivacional em MDF", desc:"Frases inspiradoras com corte a laser vazado, pintura ou impressão UV à escolha.", price:59.90},
   {id:10, cat:"Personalizados", icon:"🏆", tag:"", name:"Troféu Personalizado em Acrílico", desc:"Modelos exclusivos para premiações corporativas, esportivas ou escolares.", price:149.90},
   {id:11, cat:"Pet", icon:"🐶", tag:"", name:"Placa 'Cuidado com o Cão' Moderna", desc:"Design atual em acrílico ou ACM, resistente a intempéries, com opção de foto do pet.", price:54.90},
-  {id:12, cat:"Organização", icon:"🗂️", tag:"", name:"Display de Balcão para Pequenos Comércios", desc:"Expositor em acrílico para produtos, cardápios ou folhetos — sob medida.", price:119.90},
+  {id:12, cat:"Organização", icon:"🗂️", tag:"", name:"Display de Balcão para Pequenos Comércios", desc:"Expositor em acrílico para produtos, cardápios ou folhetos — sob medida.", price:119.90}
 ];
 
 const PROCESS_STEPS = [
   {icon:"🖨️", label:"Impressão UV", text:"Impressão direta em alta definição, com cores vivas e resistência a UV, sobre acrílico, MDF ou ACM."},
   {icon:"✂️", label:"Corte a laser", text:"Precisão milimétrica em cada contorno, garantindo acabamento limpo e sem rebarbas."},
   {icon:"🛠️", label:"Montagem", text:"Fixações, LEDs e acabamentos são montados à mão, com checagem individual de qualidade."},
-  {icon:"📦", label:"Embalagem", text:"Proteção em bolha dupla e caixa reforçada, pensada para peças frágeis viajarem com segurança."},
+  {icon:"📦", label:"Embalagem", text:"Proteção em bolha dupla e caixa reforçada, pensada para peças frágeis viajarem com segurança."}
 ];
 
 const ICON_ACCENTS = ["#00c2ff","#ff2d95","#ffe000"];
@@ -622,84 +623,94 @@ const ICONS = {
   9: `<svg viewBox="0 0 48 48"><rect x="7" y="7" width="34" height="34" rx="1"/><path d="M24 15 L27 21 L33 22 L28.5 26 L30 32 L24 28.5 L18 32 L19.5 26 L15 22 L21 21 Z"/></svg>`,
   10: `<svg viewBox="0 0 48 48"><path d="M16 8 H32 V16 A8 8 0 0 1 16 16 Z"/><path d="M16 10 H9 A7 7 0 0 0 16 20"/><path d="M32 10 H39 A7 7 0 0 1 32 20"/><line x1="24" y1="24" x2="24" y2="32"/><path d="M16 40 H32 L29 34 H19 Z"/></svg>`,
   11: `<svg viewBox="0 0 48 48"><path d="M24 6 L44 40 H4 Z"/><ellipse cx="24" cy="27" rx="3.4" ry="4.2"/><ellipse cx="17" cy="22" rx="2.2" ry="2.8"/><ellipse cx="31" cy="22" rx="2.2" ry="2.8"/><ellipse cx="19" cy="16" rx="1.8" ry="2.3"/><ellipse cx="29" cy="16" rx="1.8" ry="2.3"/></svg>`,
-  12: `<svg viewBox="0 0 48 48"><path d="M9 40 H39"/><rect x="12" y="26" width="24" height="14"/><rect x="16" y="14" width="16" height="12"/><rect x="19" y="6" width="10" height="8"/></svg>`,
+  12: `<svg viewBox="0 0 48 48"><path d="M9 40 H39"/><rect x="12" y="26" width="24" height="14"/><rect x="16" y="14" width="16" height="12"/><rect x="19" y="6" width="10" height="8"/></svg>`
 };
 
-function iconFor(p){
+function iconFor(p) {
   if (p.image) {
-    return `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:2px;">`;
+    let imgUrl = p.image;
+    if (imgUrl.startsWith('/')) imgUrl = imgUrl.substring(1);
+    return `<img src="${imgUrl}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:4px;" onerror="this.outerHTML='<span class=\\'pic\\'>🛍️</span>'">`;
   }
   const color = ICON_ACCENTS[(typeof p.id === 'number' ? p.id : 1) % ICON_ACCENTS.length];
   return `<span class="pic" style="color:${color};">${ICONS[p.id] || '🛍️'}</span>`;
 }
 
-// Função auxiliar para ler arquivos de texto do Decap CMS (YAML / Frontmatter)
-function parseFrontmatter(text) {
-  const data = {};
-  const lines = text.split('\n');
+// Leitor avançado de YAML/Frontmatter (Markdown do Decap CMS)
+function parseYAML(text) {
+  const result = {};
+  const lines = text.split(/\r?\n/);
   let inFrontmatter = false;
-  
+
   for (let line of lines) {
-    if (line.trim() === '---') {
+    line = line.trim();
+    if (line === '---') {
       inFrontmatter = !inFrontmatter;
       continue;
     }
-    if (inFrontmatter || lines.length < 5) {
-      const parts = line.split(':');
-      if (parts.length >= 2) {
-        const key = parts[0].trim();
-        let val = parts.slice(1).join(':').trim().replace(/^["']|["']$/g, '');
-        data[key] = val;
-      }
+    const match = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*(.*)$/);
+    if (match) {
+      let key = match[1].toLowerCase();
+      let val = match[2].replace(/^["']|["']$/g, '').trim();
+      result[key] = val;
     }
   }
-  return data;
+  return result;
 }
 
-// BUSCAR PRODUTOS CADASTRADOS VIA CMS (GitHub)
+// BUSCAR PRODUTOS CADASTRADOS NO GITHUB
 async function fetchCMSProducts() {
   try {
+    // Aponta exatamente para a pasta no repositório: conteudo/produto
     const response = await fetch('https://api.github.com/repos/carouziz/Site-da-max/contents/conteudo/produto');
-    if (!response.ok) return;
-    
+    if (!response.ok) {
+      console.warn("Pasta 'conteudo/produto' ainda não encontrada ou sem acesso.");
+      return;
+    }
+
     const files = await response.json();
     if (!Array.isArray(files)) return;
 
     const cmsProducts = [];
 
     for (let file of files) {
-      if (file.name.startsWith('.')) continue; // ignora arquivos ocultos
-      
-      const res = await fetch(file.download_url);
-      const rawText = await res.text();
-      let data = {};
+      if (file.name.startsWith('.') || file.type !== 'file') continue;
 
       try {
-        data = JSON.parse(rawText);
-      } catch (e) {
-        data = parseFrontmatter(rawText);
-      }
+        const res = await fetch(file.download_url);
+        const rawText = await res.text();
+        let data = {};
 
-      if (data.title || data.name) {
-        cmsProducts.push({
-          id: file.sha,
-          cat: data.cat || data.categoria || "Geral",
-          name: data.title || data.name || "Produto sem nome",
-          desc: data.desc || data.description || "",
-          price: parseFloat(data.price || data.preco || 0),
-          tag: data.tag || "",
-          image: data.image || data.imagem || null
-        });
+        try {
+          data = JSON.parse(rawText);
+        } catch (e) {
+          data = parseYAML(rawText);
+        }
+
+        const name = data.title || data.name || data.titulo;
+        if (name) {
+          cmsProducts.push({
+            id: file.sha,
+            cat: data.cat || data.categoria || "Geral",
+            name: name,
+            desc: data.desc || data.description || data.descricao || "",
+            price: parseFloat((data.price || data.preco || 0).toString().replace(',', '.')),
+            tag: data.tag || "",
+            image: data.image || data.imagem || null
+          });
+        }
+      } catch (fErr) {
+        console.error("Erro ao ler arquivo individual:", file.name, fErr);
       }
     }
 
     if (cmsProducts.length > 0) {
-      PRODUCTS = cmsProducts; // Substitui pelos cadastrados
+      PRODUCTS = cmsProducts; // Substitui os produtos estáticos pelos reais
       renderFilters();
       renderGrid();
     }
   } catch (err) {
-    console.error("Erro ao carregar produtos do CMS:", err);
+    console.error("Erro na busca de produtos do CMS:", err);
   }
 }
 
@@ -759,15 +770,18 @@ function addToCart(id, btn){
   badge.classList.remove('pulse'); void badge.offsetWidth; badge.classList.add('pulse');
   openCart();
 }
+
 function changeQty(id, delta){
   cart[id] = (cart[id]||0) + delta;
   if(cart[id] <= 0) delete cart[id];
   updateCartUI();
 }
+
 function removeItem(id){
   delete cart[id];
   updateCartUI();
 }
+
 function updateCartUI(){
   const ids = Object.keys(cart);
   const count = ids.reduce((s,id)=>s+cart[id],0);
@@ -783,7 +797,9 @@ function updateCartUI(){
       const qty = cart[id];
       return `
       <div class="cart-line">
-        <div class="thumb">${p.icon || '🛍️'}</div>
+        <div class="thumb" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
+          ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">` : (p.icon || '🛍️')}
+        </div>
         <div class="info">
           <div class="n">${p.name}</div>
           <div class="p">R$ ${(p.price || 0).toFixed(2).replace('.',',')}</div>
@@ -809,6 +825,7 @@ function openCart(){
   document.getElementById('drawer').classList.add('open');
   document.getElementById('overlay').classList.add('open');
 }
+
 function closeCart(){
   document.getElementById('drawer').classList.remove('open');
   document.getElementById('overlay').classList.remove('open');
@@ -884,6 +901,7 @@ function renderProcessTabs(){
     </div>
   `).join('');
 }
+
 function setStage(i){
   stageIndex = i;
   document.querySelectorAll('.p-tab').forEach((t,idx)=>t.classList.toggle('active', idx===i));
@@ -898,8 +916,9 @@ renderGrid();
 updateCartUI();
 renderProcessTabs();
 
-// Puxa os produtos do CMS automaticamente
+// Executa a busca no GitHub
 fetchCMSProducts();
+</script>
 </script>
 
 </body>
