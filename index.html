@@ -700,15 +700,7 @@ async function fetchCMSProducts() {
     console.error("Erro no CMS:", err);
   }
 }
-  try {
-    // Caminho correto confirmado no seu repositório: conteudo/produtos
-    const response = await fetch('https://api.github.com/repos/carouziz/Site-da-max/contents/conteudo/produtos');
-    
-    if (!response.ok) {
-      console.warn("Não foi possível acessar a pasta de produtos no GitHub.");
-      return;
-    }
-
+  
     const files = await response.json();
     if (!Array.isArray(files)) return;
 
