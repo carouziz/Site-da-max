@@ -662,7 +662,7 @@ async function fetchCMSProducts() {
     if (!response.ok) return;
 
     const files = await response.json();
-    if (!Array.isArray(files)) return;
+    if (!Array.isArray(files) || files.length === 0) return; // Se a pasta estiver vazia, NÃO apaga os produtos padrão!
 
     const cmsProducts = [];
 
@@ -696,6 +696,17 @@ async function fetchCMSProducts() {
         console.error("Erro ao ler o arquivo:", file.name, fErr);
       }
     }
+
+    // SÓ ATUALIZA A TELA SE ENCONTRAR PRODUTOS VÁLIDOS NO GITHUB
+    if (cmsProducts.length > 0) {
+      PRODUCTS = cmsProducts;
+      renderFilters();
+      renderGrid();
+    }
+  } catch (err) {
+    console.error("Erro no CMS:", err);
+  }
+}
 
     if (cmsProducts.length > 0) {
       PRODUCTS = cmsProducts;
