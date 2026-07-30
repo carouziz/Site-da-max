@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel de Controle - Max Comunicação Visual</title>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+  <script>
+    // Conecta o login do seu site da Hostinger ao serviço do Netlify
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on("init", user => {
+        if (!user) {
+          window.netlifyIdentity.on("login", () => {
+            document.location.reload();
+          });
+        }
+      });
+    }
+  </script>
+
+  <!-- Adicione ESTA LINHA ABAIXO trocando 'seu-site.netlify.app' pelo seu link do Netlify -->
+  <script>
+    window.CMS_MANUAL_INIT = true;
+  </script>
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    CMS.init({
+      config: {
+        backend: {
+          name: 'git-gateway',
+          site_domain: 'https://sitemaxteste.netlify.app/' // <-- COLOQUE SEU LINK DO NETLIFY AQUI!
+        }
+      }
+    });
+  </script>
+</body>
+</html>
