@@ -585,7 +585,8 @@
   </div>
 </div>
 
- <script>
+
+<script>
 function parseYAML(text) {
   const result = {};
   const lines = text.split(/\r?\n/);
@@ -605,9 +606,7 @@ function parseYAML(text) {
   return result;
 }
 
-// ==========================================
-// SEUS PRODUTOS ESTÃO TODOS AQUI:
-// ==========================================
+// PRODUTOS
 let PRODUCTS = [
   {id:1, cat:"Decoração", icon:"🖼️", tag:"Mais vendido", name:"Quadro Decorativo em Acrílico UV", desc:"Impressão UV de alta definição em acrílico 3mm, com frase, foto ou arte à sua escolha. Tamanhos 20x30 a 40x60cm.", price:129.90},
   {id:2, cat:"Organização", icon:"💄", tag:"Tendência", name:"Organizador de Acrílico para Cosméticos", desc:"Organizador multiuso em acrílico transparente 3mm, gavetas e divisórias sob medida.", price:89.90},
@@ -623,9 +622,7 @@ let PRODUCTS = [
   {id:12, cat:"Organização", icon:"🗂️", tag:"", name:"Display de Balcão para Pequenos Comércios", desc:"Expositor em acrílico para produtos, cardápios ou folhetos — sob medida.", price:119.90}
 ];
 
-// ==========================================
-// SEUS PROCESSOS ESTÃO TODOS AQUI:
-// ==========================================
+// PROCESSOS
 const PROCESS_STEPS = [
   {icon:"🖨️", label:"Impressão UV", text:"Impressão direta em alta definição, com cores vivas e resistência a UV, sobre acrílico, MDF ou ACM."},
   {icon:"✂️", label:"Corte a laser", text:"Precisão milimétrica em cada contorno, garantindo acabamento limpo e sem rebarbas."},
@@ -659,7 +656,7 @@ function iconFor(p) {
   return `<span class="pic" style="color:${color};">${ICONS[p.id] || '🛍️'}</span>`;
 }
 
-// FUNÇÃO PARA BUSCAR PRODUTOS DO GITHUB (SEM DUPLICAÇÃO)
+// BUSCA NO GITHUB (COM ASYNC CORRETO)
 async function fetchCMSProducts() {
   try {
     const response = await fetch('https://api.github.com/repos/carouziz/Site-da-max/contents/conteudo/produtos');
@@ -716,6 +713,7 @@ let cart = {};
 function renderFilters(){
   const cats = ["Todos", ...new Set(PRODUCTS.map(p=>p.cat))];
   const el = document.getElementById('filters');
+  if(!el) return;
   el.innerHTML = cats.map((c,i)=>`<button class="filter-btn ${i===0?'active':''}" data-cat="${c}" onclick="filterCat('${c}',this)">${c}</button>`).join('');
 }
 
@@ -727,9 +725,10 @@ function filterCat(cat, btn){
 
 function renderGrid(filter="Todos"){
   const grid = document.getElementById('grid');
+  if(!grid) return;
   const list = filter==="Todos" ? PRODUCTS : PRODUCTS.filter(p=>p.cat===filter);
   grid.innerHTML = list.map(p => `
-    <div class="card">
+    <div class="card in" style="opacity:1; transform:none;">
       <div class="card-media">
         ${p.tag ? `<span class="tag">${p.tag}</span>` : ''}
         ${iconFor(p)}
@@ -745,13 +744,6 @@ function renderGrid(filter="Todos"){
       </div>
     </div>
   `).join('');
-  requestAnimationFrame(revealCards);
-}
-
-function revealCards(){
-  document.querySelectorAll('.card').forEach((c,i)=>{
-    setTimeout(()=>c.classList.add('in'), i*45);
-  });
 }
 
 function addToCart(id, btn){
@@ -764,7 +756,9 @@ function addToCart(id, btn){
     setTimeout(()=>{ btn.classList.remove('added'); btn.innerText = original; }, 900);
   }
   const badge = document.getElementById('cartCount');
-  badge.classList.remove('pulse'); void badge.offsetWidth; badge.classList.add('pulse');
+  if(badge) {
+    badge.classList.remove('pulse'); void badge.offsetWidth; badge.classList.add('pulse');
+  }
   openCart();
 }
 
@@ -782,114 +776,64 @@ function removeItem(id){
 function updateCartUI(){
   const ids = Object.keys(cart);
   const count = ids.reduce((s,id)=>s+cart[id],0);
-  document.getElementById('cartCount').innerText = count;
+  const cartCountEl = document.getElementById('cartCount');
+  if(cartCountEl) cartCountEl.innerText = count;
 
   const itemsEl = document.getElementById('drawerItems');
-  if(ids.length === 0){
-    itemsEl.innerHTML = `<div class="empty-cart">Seu carrinho está vazio.<br>Adicione produtos do catálogo.</div>`;
-  } else {
-    itemsEl.innerHTML = ids.map(id=>{
-      const p = PRODUCTS.find(x=>x.id==id);
-      if(!p) return '';
-      const qty = cart[id];
-      return `
-      <div class="cart-line">
-        <div class="thumb" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
-          ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">` : (p.icon || '🛍️')}
-        </div>
-        <div class="info">
-          <div class="n">${p.name}</div>
-          <div class="p">R$ ${(p.price || 0).toFixed(2).replace('.',',')}</div>
-          <div class="qty-ctrl">
-            <button onclick="changeQty('${p.id}',-1)">−</button>
-            <span>${qty}</span>
-            <button onclick="changeQty('${p.id}',1)">+</button>
+  if(itemsEl){
+    if(ids.length === 0){
+      itemsEl.innerHTML = `<div class="empty-cart">Seu carrinho está vazio.<br>Adicione produtos do catálogo.</div>`;
+    } else {
+      itemsEl.innerHTML = ids.map(id=>{
+        const p = PRODUCTS.find(x=>x.id==id);
+        if(!p) return '';
+        const qty = cart[id];
+        return `
+        <div class="cart-line">
+          <div class="thumb" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
+            ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">` : (p.icon || '🛍️')}
           </div>
-          <button class="rm" onclick="removeItem('${p.id}')">Remover</button>
-        </div>
-      </div>`;
-    }).join('');
+          <div class="info">
+            <div class="n">${p.name}</div>
+            <div class="p">R$ ${(p.price || 0).toFixed(2).replace('.',',')}</div>
+            <div class="qty-ctrl">
+              <button onclick="changeQty('${p.id}',-1)">−</button>
+              <span>${qty}</span>
+              <button onclick="changeQty('${p.id}',1)">+</button>
+            </div>
+            <button class="rm" onclick="removeItem('${p.id}')">Remover</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
   }
 
   const total = ids.reduce((s,id)=>{
     const item = PRODUCTS.find(x=>x.id==id);
     return s + cart[id] * (item ? item.price : 0);
   }, 0);
-  document.getElementById('cartTotal').innerText = "R$ " + total.toFixed(2).replace('.',',');
+  const totalEl = document.getElementById('cartTotal');
+  if(totalEl) totalEl.innerText = "R$ " + total.toFixed(2).replace('.',',');
 }
 
 function openCart(){
-  document.getElementById('drawer').classList.add('open');
-  document.getElementById('overlay').classList.add('open');
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('overlay');
+  if(drawer) drawer.classList.add('open');
+  if(overlay) overlay.classList.add('open');
 }
 
 function closeCart(){
-  document.getElementById('drawer').classList.remove('open');
-  document.getElementById('overlay').classList.remove('open');
-}
-
-const SHIPPING_ZONES = {
-  "8": {nome:"Sul (local)", pac:[3,10.90], sedex:[1,22.90]},
-  "0": {nome:"Sudeste", pac:[6,16.90], sedex:[2,34.90]},
-  "1": {nome:"Sudeste", pac:[6,16.90], sedex:[2,34.90]},
-  "2": {nome:"Sudeste/RJ-ES", pac:[7,18.90], sedex:[2,36.90]},
-  "3": {nome:"Sudeste/MG", pac:[6,17.90], sedex:[2,35.90]},
-  "4": {nome:"Nordeste/BA-SE", pac:[10,26.90], sedex:[3,49.90]},
-  "5": {nome:"Nordeste", pac:[11,28.90], sedex:[3,52.90]},
-  "6": {nome:"Norte/Nordeste", pac:[12,31.90], sedex:[4,58.90]},
-  "7": {nome:"Centro-Oeste/DF", pac:[8,21.90], sedex:[3,41.90]},
-  "9": {nome:"Sul", pac:[4,12.90], sedex:[1,24.90]},
-};
-
-function calcularFrete(){
-  const cepEl = document.getElementById('cepInput');
-  const cep = cepEl.value.replace(/\D/g,'');
-  const resultsEl = document.getElementById('shipResults');
-  if(cep.length !== 8){
-    resultsEl.innerHTML = `<div class="opt">CEP inválido — digite os 8 números.</div>`;
-    return;
-  }
-  const zone = SHIPPING_ZONES[cep[0]] || SHIPPING_ZONES["8"];
-  resultsEl.innerHTML = `
-    <div class="opt"><span>PAC (${zone.nome})</span><span>R$ ${zone.pac[1].toFixed(2).replace('.',',')} · até ${zone.pac[0]} dias úteis</span></div>
-    <div class="opt"><span>SEDEX (${zone.nome})</span><span>R$ ${zone.sedex[1].toFixed(2).replace('.',',')} · até ${zone.sedex[0]} dias úteis</span></div>
-    <div class="opt" style="color:var(--muted);">Valores estimados — o valor exato aparece no checkout.</div>
-  `;
-}
-
-const MP_BACKEND_URL = "/criar-preferencia";
-
-async function checkoutMercadoPago(){
-  const ids = Object.keys(cart);
-  if(ids.length === 0){ alert("Seu carrinho está vazio."); return; }
-
-  const items = ids.map(id=>{
-    const p = PRODUCTS.find(x=>x.id==id);
-    return { title: p.name, quantity: cart[id], unit_price: p.price, currency_id: "BRL" };
-  });
-
-  const nota = document.getElementById('personalizeNote').value.trim();
-
-  try{
-    const resp = await fetch(MP_BACKEND_URL, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ items, nota })
-    });
-    const data = await resp.json();
-    if(data.init_point){
-      window.location.href = data.init_point;
-    } else {
-      alert("Endpoint de pagamento ainda não configurado.");
-    }
-  } catch(e){
-    alert("Endpoint de pagamento ainda não configurado.");
-  }
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('overlay');
+  if(drawer) drawer.classList.remove('open');
+  if(overlay) overlay.classList.remove('open');
 }
 
 let stageIndex = 0;
 function renderProcessTabs(){
   const el = document.getElementById('processTabs');
+  if(!el) return;
   el.innerHTML = PROCESS_STEPS.map((s,i)=>`
     <div class="p-tab ${i===0?'active':''}" data-i="${i}" onclick="setStage(${i})">
       <div class="num">0${i+1}</div>
@@ -903,16 +847,20 @@ function setStage(i){
   stageIndex = i;
   document.querySelectorAll('.p-tab').forEach((t,idx)=>t.classList.toggle('active', idx===i));
   const s = PROCESS_STEPS[i];
-  document.getElementById('stageLabel').innerText = s.label;
+  const labelEl = document.getElementById('stageLabel');
+  if(labelEl) labelEl.innerText = s.label;
 }
-setInterval(()=> setStage((stageIndex+1) % PROCESS_STEPS.length), 4200);
 
-// INICIALIZAÇÃO DA PÁGINA
-renderFilters();
-renderGrid();
-updateCartUI();
-renderProcessTabs();
-fetchCMSProducts();
+// INICIALIZAÇÃO SEGURA
+document.addEventListener("DOMContentLoaded", function() {
+  renderFilters();
+  renderGrid();
+  updateCartUI();
+  renderProcessTabs();
+  fetchCMSProducts();
+  setInterval(()=> setStage((stageIndex+1) % PROCESS_STEPS.length), 4200);
+});
+
 
 </script>
 
