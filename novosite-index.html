@@ -662,7 +662,7 @@ function parseYAML(text) {
 async function fetchCMSProducts() {
   try {
     // Aponta exatamente para a pasta no repositório: conteudo/produto
-    const response = await fetch('https://api.github.com/repos/carouziz/Site-da-max/contents/conteudo/produto');
+    const response = await fetch('https://api.github.com/repos/carouziz/Site-da-max/contents/conteudo/produtos');
     if (!response.ok) {
       console.warn("Pasta 'conteudo/produto' ainda não encontrada ou sem acesso.");
       return;
