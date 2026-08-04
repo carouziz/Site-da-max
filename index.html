@@ -566,8 +566,36 @@
     <button class="close-x" onclick="closeCart()">×</button>
   </div>
   <div class="drawer-items" id="drawerItems"></div>
-  <div class="drawer-foot">
-    <div class="ship-calc">
+  <div class="drawer-foot"><div class="drawer-items" id="drawerItems"></div>
+<div class="drawer-foot">
+
+  <!-- COLE A PARTIR DAQUI (Substitui o ship-calc antigo) -->
+  <div class="ship-calc">
+    <label>Calcular frete</label>
+    <div class="cep-row">
+      <input type="text" id="cepInput" placeholder="Digite seu CEP" maxlength="9">
+      <button onclick="calcularFrete()">Calcular</button>
+    </div>
+
+    <!-- Campos de dimensões inseridos aqui -->
+    <details style="margin-top: 8px; font-size: 0.85em; color: var(--muted, #666);">
+      <summary style="cursor: pointer;">Ajustar dimensões (opcional)</summary>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px;">
+        <input type="number" id="larguraInput" placeholder="Largura (cm)" value="15" style="padding: 4px; font-size: 0.85em;">
+        <input type="number" id="alturaInput" placeholder="Altura (cm)" value="10" style="padding: 4px; font-size: 0.85em;">
+        <input type="number" id="comprimentoInput" placeholder="Comprimento (cm)" value="20" style="padding: 4px; font-size: 0.85em;">
+        <input type="number" id="pesoInput" placeholder="Peso (kg)" value="0.5" step="0.1" style="padding: 4px; font-size: 0.85em;">
+      </div>
+    </details>
+
+    <div class="ship-results" id="shipResults"></div>
+  </div>
+  <!-- ATÉ AQUI -->
+
+  <div class="personalize-box">
+    <label>Personalização (nome, texto, cor, referência de imagem)</label>
+    <textarea id="personalizeNote" placeholder="Ex.: nome 'Sofia', letra dourada, foto em anexo por WhatsApp"></textarea>
+  </div>
       <label>Calcular frete</label>
       <div class="cep-row">
         <input type="text" id="cepInput" placeholder="Digite seu CEP" maxlength="9">
