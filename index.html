@@ -889,7 +889,7 @@ document.addEventListener("DOMContentLoaded", function() {
   setInterval(()=> setStage((stageIndex+1) % PROCESS_STEPS.length), 4200);
 });
 async function calcularFrete() {
-  const CEP_ORIGEM = "82700300"; // <-- ALTERE PARA O SEU CEP DE ORIGEM (só números)
+  const CEP_ORIGEM = "82700300"; // CEP de Origem (apenas números)
   
   const cepInput = document.getElementById('cepInput');
   const resultsDiv = document.getElementById('shipResults');
@@ -917,14 +917,13 @@ async function calcularFrete() {
       body: JSON.stringify({
         from: { postal_code: CEP_ORIGEM },
         to: { postal_code: cep },
-        products: [
+        packages: [
           {
-            id: '1',
             width: largura,
             height: altura,
             length: comprimento,
             weight: peso,
-            quantity: 1
+            insurance_value: 0
           }
         ]
       })
@@ -932,12 +931,14 @@ async function calcularFrete() {
 
     const opcoes = await response.json();
 
-    if (!Array.isArray(opcoes) || opcoes.length === 0) {
-      resultsDiv.innerHTML = '<span style="color:var(--danger, red); font-size: 0.85em;">Nenhuma opção de frete disponível.</span>';
+    // Trata caso a API retorne um objeto de erro do Melhor Envio
+    if (opcoes.error || opcoes.errors || !Array.isArray(opcoes)) {
+      console.error('Retorno com erro do Melhor Envio:', opcoes);
+      resultsDiv.innerHTML = '<span style="color:var(--danger, red); font-size: 0.85em;">Erro na consulta do CEP. Verifique os dados.</span>';
       return;
     }
 
-    // Filtra opções válidas
+    // Filtra opções válidas e sem erros individuais por transportadora
     const fretesValidos = opcoes.filter(opt => !opt.error && opt.price);
 
     if (fretesValidos.length === 0) {
@@ -948,7 +949,7 @@ async function calcularFrete() {
     // Exibe os fretes formatados mantendo o estilo do carrinho
     resultsDiv.innerHTML = fretesValidos.map(opt => `
       <div class="opt" style="padding: 6px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 0.85em;">
-        <span><strong>${opt.name}</strong> (${opt.delivery_time} dias)</span>
+        <span><strong>${opt.name}</strong> (${opt.custom_delivery_time || opt.delivery_time} dias)</span>
         <b>R$ ${parseFloat(opt.price).toFixed(2).replace('.', ',')}</b>
       </div>
     `).join('');
