@@ -860,7 +860,7 @@ document.addEventListener("DOMContentLoaded", function() {
   
   setInterval(()=> setStage((stageIndex+1) % PROCESS_STEPS.length), 4200);
 });
-  function calcularFrete() {
+async function calcularFrete() {
   const cepInput = document.getElementById('cepInput');
   const resultsDiv = document.getElementById('shipResults');
   
@@ -872,33 +872,33 @@ document.addEventListener("DOMContentLoaded", function() {
     return;
   }
 
-  // Pega os 2 primeiros dígitos do CEP para estimar por região
-  const regiao = parseInt(cep.substring(0, 2));
+  resultsDiv.innerHTML = '<span style="color:var(--muted)">Consultando Melhor Envio...</span>';
 
-  let sedex = 0;
-  let pac = 0;
+  try {
+    // Cole aqui o link do seu Worker (o mesmo que deu a mensagem de método não permitido)
+    const response = await fetch('https://frete-max.carolinagarciamax.workers.dev/', {
+      method: 'POST', // Aqui o site envia como POST, então o erro desaparece!
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cepDestino: cep })
+    });
 
-  if (regiao >= 80 && regiao <= 83) { 
-    // Curitiba e Região Metropolitana
-    pac = 15.90; sedex = 22.90;
-  } else if (regiao >= 84 && regiao <= 87) { 
-    // Interior do PR
-    pac = 21.90; sedex = 32.90;
-  } else if (regiao >= 10 && regiao <= 19) { 
-    // São Paulo (SP)
-    pac = 26.90; sedex = 45.90;
-  } else if (regiao >= 88 && regiao <= 99) { 
-    // SC e RS
-    pac = 24.90; sedex = 39.90;
-  } else { 
-    // Outros Estados
-    pac = 34.90; sedex = 68.90;
+    const opcoes = await response.json();
+
+    if (!opcoes || opcoes.length === 0) {
+      resultsDiv.innerHTML = '<span style="color:var(--danger)">Nenhuma opção de frete disponível.</span>';
+      return;
+    }
+
+    resultsDiv.innerHTML = opcoes.map(opt => `
+      <div class="opt">
+        <span>${opt.nome} (${opt.prazo} dias úteis)</span>
+        <b>R$ ${opt.preco.toFixed(2).replace('.', ',')}</b>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    resultsDiv.innerHTML = '<span style="color:var(--danger)">Erro ao cotar frete.</span>';
   }
-
-  resultsDiv.innerHTML = `
-    <div class="opt"><span>PAC (3 a 7 dias)</span><b>R$ ${pac.toFixed(2).replace('.', ',')}</b></div>
-    <div class="opt"><span>SEDEX (1 a 3 dias)</span><b>R$ ${sedex.toFixed(2).replace('.', ',')}</b></div>
-  `;
 }
 
 </script>
