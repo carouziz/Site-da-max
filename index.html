@@ -889,7 +889,7 @@ document.addEventListener("DOMContentLoaded", function() {
   setInterval(()=> setStage((stageIndex+1) % PROCESS_STEPS.length), 4200);
 });
 async function calcularFrete() {
-  const CEP_ORIGEM = "01001000"; // <-- COLOQUE SEU CEP DE ORIGEM AQUI (só números)
+  const CEP_ORIGEM = "01001000"; // <-- ALTERE PARA O SEU CEP DE ORIGEM (só números)
   
   const cepInput = document.getElementById('cepInput');
   const resultsDiv = document.getElementById('shipResults');
@@ -898,17 +898,17 @@ async function calcularFrete() {
   const cep = cepInput.value.replace(/\D/g, '');
 
   if (cep.length !== 8) {
-    resultsDiv.innerHTML = '<span style="color:var(--danger, red);">Digite um CEP válido com 8 dígitos.</span>';
+    resultsDiv.innerHTML = '<span style="color:var(--danger, red); font-size: 0.85em;">Digite um CEP válido com 8 dígitos.</span>';
     return;
   }
 
-  // Pega as dimensões digitadas ou usa os valores padrão se estiverem vazios
+  // Pega os valores dos inputs retráteis (ou usa o padrão)
   const largura = parseFloat(document.getElementById('larguraInput')?.value) || 15;
   const altura = parseFloat(document.getElementById('alturaInput')?.value) || 10;
   const comprimento = parseFloat(document.getElementById('comprimentoInput')?.value) || 20;
   const peso = parseFloat(document.getElementById('pesoInput')?.value) || 0.5;
 
-  resultsDiv.innerHTML = '<span style="color:var(--muted, #666);">Consultando Melhor Envio...</span>';
+  resultsDiv.innerHTML = '<span style="color:var(--muted, #666); font-size: 0.85em;">Consultando Melhor Envio...</span>';
 
   try {
     const response = await fetch('https://frete-max.carolinagarciamax.workers.dev/', {
@@ -933,28 +933,28 @@ async function calcularFrete() {
     const opcoes = await response.json();
 
     if (!Array.isArray(opcoes) || opcoes.length === 0) {
-      resultsDiv.innerHTML = '<span style="color:var(--danger, red);">Nenhuma opção de frete disponível.</span>';
+      resultsDiv.innerHTML = '<span style="color:var(--danger, red); font-size: 0.85em;">Nenhuma opção de frete disponível.</span>';
       return;
     }
 
-    // Filtra opções sem erro e com preço válido
+    // Filtra opções válidas
     const fretesValidos = opcoes.filter(opt => !opt.error && opt.price);
 
     if (fretesValidos.length === 0) {
-      resultsDiv.innerHTML = '<span style="color:var(--danger, red);">Nenhuma transportadora atende a esse CEP.</span>';
+      resultsDiv.innerHTML = '<span style="color:var(--danger, red); font-size: 0.85em;">Nenhuma transportadora atende a esse CEP.</span>';
       return;
     }
 
-    // Exibe as opções detalhadas no container
+    // Exibe os fretes formatados mantendo o estilo do carrinho
     resultsDiv.innerHTML = fretesValidos.map(opt => `
-      <div class="opt" style="padding: 8px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-        <span><strong>${opt.name}</strong> (${opt.delivery_time} dias úteis)</span>
+      <div class="opt" style="padding: 6px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 0.85em;">
+        <span><strong>${opt.name}</strong> (${opt.delivery_time} dias)</span>
         <b>R$ ${parseFloat(opt.price).toFixed(2).replace('.', ',')}</b>
       </div>
     `).join('');
 
   } catch (err) {
-    resultsDiv.innerHTML = '<span style="color:var(--danger, red);">Erro ao cotar frete. Tente novamente.</span>';
+    resultsDiv.innerHTML = '<span style="color:var(--danger, red); font-size: 0.85em;">Erro ao cotar frete. Tente novamente.</span>';
     console.error('Erro na cotação:', err);
   }
 }
